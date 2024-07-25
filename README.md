@@ -1,3 +1,3 @@
-# pianfan.github.io
+# InfiniteBoyEric.github.io
 
-My Personal Blog via GitHub
+Here is InfiniteBoy's personal blog via Github. Welcome!
