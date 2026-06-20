@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AM调制动画演示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e6e6e6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            color: #4cc9f0;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+        
+        .subtitle {
+            color: #a9a9a9;
+            font-size: 1.1rem;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .wave-container {
+            flex: 1 1 600px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .wave-title {
+            color: #4cc9f0;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .wave-title i {
+            margin-right: 10px;
+            font-size: 1.6rem;
+        }
+        
+        .wave-canvas {
+            width: 100%;
+            height: 200px;
+            background: rgba(10, 15, 30, 0.7);
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(76, 201, 240, 0.2);
+        }
+        
+        .controls {
+            flex: 1 1 500px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .control-group {
+            margin-bottom: 25px;
+        }
+        
+        .control-title {
+            color: #4cc9f0;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .control-title i {
+            margin-right: 10px;
+        }
+        
+        .slider-container {
+            margin-bottom: 15px;
+        }
+        
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .slider-value {
+            color: #f72585;
+            font-weight: bold;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 10px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(76, 201, 240, 0.2);
+            border-radius: 5px;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #f72585;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(247, 37, 133, 0.7);
+        }
+        
+        .explanation {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .explanation h3 {
+            color: #4cc9f0;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+        
+        .explanation p {
+            line-height: 1.7;
+            margin-bottom: 15px;
+        }
+        
+        .formula {
+            background: rgba(10, 15, 30, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.2rem;
+            text-align: center;
+            margin: 20px 0;
+            color: #72efdd;
+            border: 1px solid rgba(76, 201, 240, 0.2);
+        }
+        
+        .button-container {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+        
+        .start-btn {
+            background: linear-gradient(90deg, #4361ee, #3a0ca3);
+            color: white;
+        }
+        
+        .start-btn:hover {
+            background: linear-gradient(90deg, #3a0ca3, #4361ee);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4);
+        }
+        
+        .reset-btn {
+            background: rgba(247, 37, 133, 0.2);
+            color: #f72585;
+            border: 1px solid #f72585;
+        }
+        
+        .reset-btn:hover {
+            background: rgba(247, 37, 133, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(247, 37, 133, 0.3);
+        }
+        
+        .animation-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .animation-controls button {
+            padding: 10px 15px;
+            flex: none;
+        }
+        
+        .status {
+            text-align: center;
+            margin-top: 20px;
+            padding: 12px;
+            background: rgba(10, 15, 30, 0.7);
+            border-radius: 8px;
+            font-weight: bold;
+            color: #72efdd;
+            border: 1px solid rgba(76, 201, 240, 0.2);
+        }
+        
+        @media (max-width: 1100px) {
+            .content {
+                flex-direction: column;
+            }
+        }
+        
+        .icon {
+            display: inline-block;
+            margin-right: 8px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-broadcast-tower"></i> AM调制动画演示</h1>
+            <p class="subtitle">本演示展示了振幅调制(AM)的工作原理。通过调节载波频率、调制信号频率和调制深度，观察波形和频谱的变化。AM调制通过改变载波的振幅来传输信息信号。</p>
+        </header>
+        
+        <div class="content">
+            <div class="wave-container">
+                <div class="wave-title">
+                    <i class="fas fa-wave-square"></i> 波形图
+                </div>
+                <canvas id="carrierWave" class="wave-canvas"></canvas>
+                <div class="wave-title">
+                    <i class="fas fa-signal"></i> 调制信号
+                </div>
+                <canvas id="modulationWave" class="wave-canvas"></canvas>
+                <div class="wave-title">
+                    <i class="fas fa-broadcast-tower"></i> 已调波 (AM信号)
+                </div>
+                <canvas id="amWave" class="wave-canvas"></canvas>
+            </div>
+            
+            <div class="controls">
+                <div class="control-group">
+                    <div class="control-title">
+                        <i class="fas fa-sliders-h"></i> 调制参数控制
+                    </div>
+                    
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>载波频率: <span id="carrierFreqValue" class="slider-value">1000 Hz</span></span>
+                        </div>
+                        <input type="range" id="carrierFreq" min="500" max="2000" value="1000" step="10">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>调制信号频率: <span id="modulationFreqValue" class="slider-value">100 Hz</span></span>
+                        </div>
+                        <input type="range" id="modulationFreq" min="10" max="200" value="100" step="1">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>调制深度: <span id="modulationDepthValue" class="slider-value">80%</span></span>
+                        </div>
+                        <input type="range" id="modulationDepth" min="10" max="100" value="80" step="1">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>动画速度: <span id="animationSpeedValue" class="slider-value">中速</span></span>
+                        </div>
+                        <input type="range" id="animationSpeed" min="1" max="5" value="3" step="1">
+                    </div>
+                </div>
+                
+                <div class="button-container">
+                    <button id="startBtn" class="start-btn">
+                        <i class="fas fa-play"></i> 开始动画
+                    </button>
+                    <button id="resetBtn" class="reset-btn">
+                        <i class="fas fa-redo"></i> 重置参数
+                    </button>
+                </div>
+                
+                <div class="animation-controls">
+                    <button id="pauseBtn" class="reset-btn">
+                        <i class="fas fa-pause"></i> 暂停
+                    </button>
+                    <button id="stepBtn" class="start-btn">
+                        <i class="fas fa-step-forward"></i> 单步
+                    </button>
+                </div>
+                
+                <div class="status" id="status">
+                    动画已停止。点击"开始动画"按钮开始演示。
+                </div>
+                
+                <div class="control-group" style="margin-top: 30px;">
+                    <div class="control-title">
+                        <i class="fas fa-chart-line"></i> 频谱图
+                    </div>
+                    <canvas id="spectrumCanvas" class="wave-canvas" style="height: 180px;"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="explanation">
+            <h3><i class="fas fa-info-circle"></i> AM调制原理</h3>
+            
+            <div class="formula">
+                S(t) = A<sub>c</sub>[1 + m·cos(2πf<sub>m</sub>t)]·cos(2πf<sub>c</sub>t)
+            </div>
+            
+            <p>振幅调制(AM)是一种调制技术，其中载波的振幅根据调制信号（携带信息的信号）的瞬时振幅而变化。</p>
+            
+            <p><strong>载波</strong>：高频正弦波，用于承载信息信号。在AM广播中，载波频率通常在530kHz到1700kHz之间。</p>
+            
+            <p><strong>调制信号</strong>：包含信息的低频信号（如音频信号）。在AM广播中，这通常是20Hz到20kHz的音频信号。</p>
+            
+            <p><strong>已调波</strong>：载波振幅随调制信号变化的结果，包含载波频率、上边带和下边带。</p>
+            
+            <p><strong>调制深度</strong>：表示载波振幅变化程度的参数。调制深度为100%时，载波振幅在0到2倍原始振幅之间变化；超过100%会导致过调制，造成信号失真。</p>
+            
+            <p>在频谱图中，您可以看到载波频率(f<sub>c</sub>)以及两个边带(f<sub>c</sub>±f<sub>m</sub>)。边带携带了调制信号的信息。</p>
+        </div>
+    </div>
+
+    <script>
+        // 获取Canvas元素和上下文
+        const carrierCanvas = document.getElementById('carrierWave');
+        const modulationCanvas = document.getElementById('modulationWave');
+        const amCanvas = document.getElementById('amWave');
+        const spectrumCanvas = document.getElementById('spectrumCanvas');
+        
+        const carrierCtx = carrierCanvas.getContext('2d');
+        const modulationCtx = modulationCanvas.getContext('2d');
+        const amCtx = amCanvas.getContext('2d');
+        const spectrumCtx = spectrumCanvas.getContext('2d');
+        
+        // 设置Canvas尺寸
+        function resizeCanvases() {
+            const width = carrierCanvas.parentElement.clientWidth;
+            
+            carrierCanvas.width = width;
+            carrierCanvas.height = 200;
+            
+            modulationCanvas.width = width;
+            modulationCanvas.height = 200;
+            
+            amCanvas.width = width;
+            amCanvas.height = 200;
+            
+            spectrumCanvas.width = width;
+            spectrumCanvas.height = 180;
+        }
+        
+        // 初始调整尺寸
+        resizeCanvases();
+        window.addEventListener('resize', resizeCanvases);
+        
+        // 获取控制元素
+        const carrierFreqSlider = document.getElementById('carrierFreq');
+        const modulationFreqSlider = document.getElementById('modulationFreq');
+        const modulationDepthSlider = document.getElementById('modulationDepth');
+        const animationSpeedSlider = document.getElementById('animationSpeed');
+        
+        const carrierFreqValue = document.getElementById('carrierFreqValue');
+        const modulationFreqValue = document.getElementById('modulationFreqValue');
+        const modulationDepthValue = document.getElementById('modulationDepthValue');
+        const animationSpeedValue = document.getElementById('animationSpeedValue');
+        
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const stepBtn = document.getElementById('stepBtn');
+        const status = document.getElementById('status');
+        
+        // 初始化参数
+        let params = {
+            carrierFreq: 1000,    // 载波频率 (Hz)
+            modulationFreq: 100,   // 调制信号频率 (Hz)
+            modulationDepth: 0.8,  // 调制深度 (0-1)
+            time: 0,               // 当前时间
+            animationSpeed: 3,     // 动画速度
+            isAnimating: false,    // 动画状态
+            animationId: null      // 动画ID
+        };
+        
+        // 更新显示值
+        function updateDisplayValues() {
+            carrierFreqValue.textContent = `${params.carrierFreq} Hz`;
+            modulationFreqValue.textContent = `${params.modulationFreq} Hz`;
+            modulationDepthValue.textContent = `${Math.round(params.modulationDepth * 100)}%`;
+            
+            const speedLabels = ['很慢', '慢速', '中速', '快速', '很快'];
+            animationSpeedValue.textContent = speedLabels[params.animationSpeed - 1];
+        }
+        
+        // 绘制载波
+        function drawCarrierWave() {
+            const ctx = carrierCtx;
+            const width = carrierCanvas.width;
+            const height = carrierCanvas.height;
+            
+            // 清除画布
+            ctx.clearRect(0, 0, width, height);
+            
+            // 绘制网格
+            drawGrid(ctx, width, height);
+            
+            // 设置样式
+            ctx.strokeStyle = '#4cc9f0';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            // 绘制载波
+            const amplitude = height / 4;
+            const centerY = height / 2;
+            const samples = width;
+            const timeScale = 0.001; // 时间缩放因子
+            
+            for (let x = 0; x < width; x++) {
+                // 计算时间
+                const t = params.time + (x / width) * 0.01;
+                
+                // 计算载波值
+                const y = amplitude * Math.cos(2 * Math.PI * params.carrierFreq * t);
+                
+                if (x === 0) {
+                    ctx.moveTo(x, centerY - y);
+                } else {
+                    ctx.lineTo(x, centerY - y);
+                }
+            }
+            
+            ctx.stroke();
+            
+            // 添加标签
+            ctx.fillStyle = '#4cc9f0';
+            ctx.font = '14px Arial';
+            ctx.fillText('载波 (高频)', 10, 20);
+            ctx.fillText(`频率: ${params.carrierFreq} Hz`, 10, 40);
+        }
+        
+        // 绘制调制信号
+        function drawModulationWave() {
+            const ctx = modulationCtx;
+            const width = modulationCanvas.width;
+            const height = modulationCanvas.height;
+            
+            // 清除画布
+            ctx.clearRect(0, 0, width, height);
+            
+            // 绘制网格
+            drawGrid(ctx, width, height);
+            
+            // 设置样式
+            ctx.strokeStyle = '#f72585';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            // 绘制调制信号
+            const amplitude = height / 4;
+            const centerY = height / 2;
+            const samples = width;
+            const timeScale = 0.001; // 时间缩放因子
+            
+            for (let x = 0; x < width; x++) {
+                // 计算时间
+                const t = params.time + (x / width) * 0.01;
+                
+                // 计算调制信号值
+                const y = amplitude * Math.cos(2 * Math.PI * params.modulationFreq * t);
+                
+                if (x === 0) {
+                    ctx.moveTo(x, centerY - y);
+                } else {
+                    ctx.lineTo(x, centerY - y);
+                }
+            }
+            
+            ctx.stroke();
+            
+            // 添加标签
+            ctx.fillStyle = '#f72585';
+            ctx.font = '14px Arial';
+            ctx.fillText('调制信号 (信息信号)', 10, 20);
+            ctx.fillText(`频率: ${params.modulationFreq} Hz`, 10, 40);
+        }
+        
+        // 绘制已调波
+        function drawAMWave() {
+            const ctx = amCtx;
+            const width = amCanvas.width;
+            const height = amCanvas.height;
+            
+            // 清除画布
+            ctx.clearRect(0, 0, width, height);
+            
+            // 绘制网格
+            drawGrid(ctx, width, height);
+            
+            // 设置样式
+            ctx.strokeStyle = '#72efdd';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            // 绘制已调波
+            const amplitude = height / 4;
+            const centerY = height / 2;
+            const samples = width;
+            const timeScale = 0.001; // 时间缩放因子
+            
+            for (let x = 0; x < width; x++) {
+                // 计算时间
+                const t = params.time + (x / width) * 0.01;
+                
+                // 计算调制信号
+                const modulationSignal = Math.cos(2 * Math.PI * params.modulationFreq * t);
+                
+                // 计算AM信号: A_c[1 + m·cos(2πf_m t)]·cos(2πf_c t)
+                const y = amplitude * (1 + params.modulationDepth * modulationSignal) * 
+                          Math.cos(2 * Math.PI * params.carrierFreq * t);
+                
+                if (x === 0) {
+                    ctx.moveTo(x, centerY - y);
+                } else {
+                    ctx.lineTo(x, centerY - y);
+                }
+            }
+            
+            ctx.stroke();
+            
+            // 绘制包络线
+            ctx.strokeStyle = 'rgba(247, 37, 133, 0.7)';
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            
+            for (let x = 0; x < width; x++) {
+                // 计算时间
+                const t = params.time + (x / width) * 0.01;
+                
+                // 计算调制信号
+                const modulationSignal = Math.cos(2 * Math.PI * params.modulationFreq * t);
+                
+                // 计算包络线: A_c[1 + m·cos(2πf_m t)]
+                const envelope = amplitude * (1 + params.modulationDepth * modulationSignal);
+                
+                if (x === 0) {
+                    ctx.moveTo(x, centerY - envelope);
+                } else {
+                    ctx.lineTo(x, centerY - envelope);
+                }
+            }
+            
+            ctx.stroke();
+            
+            // 绘制下包络线
+            ctx.beginPath();
+            
+            for (let x = 0; x < width; x++) {
+                // 计算时间
+                const t = params.time + (x / width) * 0.01;
+                
+                // 计算调制信号
+                const modulationSignal = Math.cos(2 * Math.PI * params.modulationFreq * t);
+                
+                // 计算包络线: -A_c[1 + m·cos(2πf_m t)]
+                const envelope = -amplitude * (1 + params.modulationDepth * modulationSignal);
+                
+                if (x === 0) {
+                    ctx.moveTo(x, centerY - envelope);
+                } else {
+                    ctx.lineTo(x, centerY - envelope);
+                }
+            }
+            
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // 添加标签
+            ctx.fillStyle = '#72efdd';
+            ctx.font = '14px Arial';
+            ctx.fillText('已调波 (AM信号)', 10, 20);
+            ctx.fillText(`调制深度: ${Math.round(params.modulationDepth * 100)}%`, 10, 40);
+        }
+        
+        // 绘制频谱图
+        function drawSpectrum() {
+            const ctx = spectrumCtx;
+            const width = spectrumCanvas.width;
+            const height = spectrumCanvas.height;
+            
+            // 清除画布
+            ctx.clearRect(0, 0, width, height);
+            
+            // 绘制背景
+            ctx.fillStyle = 'rgba(10, 15, 30, 0.7)';
+            ctx.fillRect(0, 0, width, height);
+            
+            // 绘制频率轴
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 1;
+            
+            // 频率范围 (Hz)
+            const minFreq = params.carrierFreq - 300;
+            const maxFreq = params.carrierFreq + 300;
+            
+            // 绘制频率刻度
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            
+            for (let freq = minFreq; freq <= maxFreq; freq += 100) {
+                const x = ((freq - minFreq) / (maxFreq - minFreq)) * width;
+                
+                ctx.beginPath();
+                ctx.moveTo(x, height - 10);
+                ctx.lineTo(x, height);
+                ctx.stroke();
+                
+                ctx.fillText(freq + ' Hz', x, height - 15);
+            }
+            
+            // 绘制载波频率线
+            const carrierX = ((params.carrierFreq - minFreq) / (maxFreq - minFreq)) * width;
+            ctx.strokeStyle = '#4cc9f0';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(carrierX, 0);
+            ctx.lineTo(carrierX, height - 20);
+            ctx.stroke();
+            
+            // 绘制载波峰值
+            const carrierHeight = height * 0.7;
+            ctx.fillStyle = '#4cc9f0';
+            ctx.beginPath();
+            ctx.arc(carrierX, height - carrierHeight, 8, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = '#4cc9f0';
+            ctx.font = 'bold 14px Arial';
+            ctx.fillText('载波', carrierX, height - carrierHeight - 15);
+            
+            // 绘制边带
+            const upperSidebandFreq = params.carrierFreq + params.modulationFreq;
+            const lowerSidebandFreq = params.carrierFreq - params.modulationFreq;
+            
+            const upperX = ((upperSidebandFreq - minFreq) / (maxFreq - minFreq)) * width;
+            const lowerX = ((lowerSidebandFreq - minFreq) / (maxFreq - minFreq)) * width;
+            
+            // 绘制上边带
+            if (upperSidebandFreq <= maxFreq) {
+                const sidebandHeight = height * 0.5 * params.modulationDepth;
+                ctx.fillStyle = '#f72585';
+                ctx.beginPath();
+                ctx.arc(upperX, height - sidebandHeight, 6, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = '#f72585';
+                ctx.font = '12px Arial';
+                ctx.fillText('上边带', upperX, height - sidebandHeight - 15);
+            }
+            
+            // 绘制下边带
+            if (lowerSidebandFreq >= minFreq) {
+                const sidebandHeight = height * 0.5 * params.modulationDepth;
+                ctx.fillStyle = '#f72585';
+                ctx.beginPath();
+                ctx.arc(lowerX, height - sidebandHeight, 6, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = '#f72585';
+                ctx.font = '12px Arial';
+                ctx.fillText('下边带', lowerX, height - sidebandHeight - 15);
+            }
+            
+            // 添加标题
+            ctx.fillStyle = '#72efdd';
+            ctx.font = 'bold 16px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText('AM信号频谱', 10, 20);
+            ctx.font = '14px Arial';
+            ctx.fillText(`载波: ${params.carrierFreq} Hz, 边带: ±${params.modulationFreq} Hz`, 10, 40);
+        }
+        
+        // 绘制网格
+        function drawGrid(ctx, width, height) {
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+            
+            // 绘制水平线
+            for (let y = 0; y <= height; y += height / 4) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+                ctx.stroke();
+            }
+            
+            // 绘制垂直线
+            for (let x = 0; x <= width; x += width / 10) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, height);
+                ctx.stroke();
+            }
+            
+            // 绘制中心线
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.beginPath();
+            ctx.moveTo(0, height / 2);
+            ctx.lineTo(width, height / 2);
+            ctx.stroke();
+        }
+        
+        // 绘制所有波形
+        function drawAllWaves() {
+            drawCarrierWave();
+            drawModulationWave();
+            drawAMWave();
+            drawSpectrum();
+        }
+        
+        // 动画循环
+        function animate() {
+            // 更新时间
+            params.time += 0.005 * params.animationSpeed;
+            
+            // 绘制所有波形
+            drawAllWaves();
+            
+            // 继续动画
+            if (params.isAnimating) {
+                params.animationId = requestAnimationFrame(animate);
+            }
+        }
+        
+        // 开始动画
+        function startAnimation() {
+            if (!params.isAnimating) {
+                params.isAnimating = true;
+                status.textContent = `动画运行中... 载波: ${params.carrierFreq} Hz, 调制: ${params.modulationFreq} Hz`;
+                startBtn.innerHTML = '<i class="fas fa-pause"></i> 暂停动画';
+                animate();
+            } else {
+                pauseAnimation();
+            }
+        }
+        
+        // 暂停动画
+        function pauseAnimation() {
+            params.isAnimating = false;
+            if (params.animationId) {
+                cancelAnimationFrame(params.animationId);
+                params.animationId = null;
+            }
+            status.textContent = '动画已暂停';
+            startBtn.innerHTML = '<i class="fas fa-play"></i> 继续动画';
+        }
+        
+        // 单步动画
+        function stepAnimation() {
+            params.time += 0.005 * params.animationSpeed;
+            drawAllWaves();
+            status.textContent = '单步执行';
+        }
+        
+        // 重置参数
+        function resetParameters() {
+            params.carrierFreq = 1000;
+            params.modulationFreq = 100;
+            params.modulationDepth = 0.8;
+            params.time = 0;
+            params.animationSpeed = 3;
+            
+            // 更新滑块
+            carrierFreqSlider.value = params.carrierFreq;
+            modulationFreqSlider.value = params.modulationFreq;
+            modulationDepthSlider.value = params.modulationDepth * 100;
+            animationSpeedSlider.value = params.animationSpeed;
+            
+            // 更新显示
+            updateDisplayValues();
+            
+            // 停止动画
+            pauseAnimation();
+            startBtn.innerHTML = '<i class="fas fa-play"></i> 开始动画';
+            
+            // 重绘
+            drawAllWaves();
+            status.textContent = '参数已重置为默认值';
+        }
+        
+        // 事件监听器
+        carrierFreqSlider.addEventListener('input', function() {
+            params.carrierFreq = parseInt(this.value);
+            updateDisplayValues();
+            if (!params.isAnimating) {
+                drawAllWaves();
+            }
+        });
+        
+        modulationFreqSlider.addEventListener('input', function() {
+            params.modulationFreq = parseInt(this.value);
+            updateDisplayValues();
+            if (!params.isAnimating) {
+                drawAllWaves();
+            }
+        });
+        
+        modulationDepthSlider.addEventListener('input', function() {
+            params.modulationDepth = parseInt(this.value) / 100;
+            updateDisplayValues();
+            if (!params.isAnimating) {
+                drawAllWaves();
+            }
+        });
+        
+        animationSpeedSlider.addEventListener('input', function() {
+            params.animationSpeed = parseInt(this.value);
+            updateDisplayValues();
+        });
+        
+        startBtn.addEventListener('click', startAnimation);
+        resetBtn.addEventListener('click', resetParameters);
+        pauseBtn.addEventListener('click', pauseAnimation);
+        stepBtn.addEventListener('click', stepAnimation);
+        
+        // 初始绘制
+        updateDisplayValues();
+        drawAllWaves();
+        
+        // 添加键盘控制
+        document.addEventListener('keydown', function(event) {
+            switch(event.key) {
+                case ' ':
+                    // 空格键切换动画状态
+                    event.preventDefault();
+                    if (params.isAnimating) {
+                        pauseAnimation();
+                    } else {
+                        startAnimation();
+                    }
+                    break;
+                case 'r':
+                case 'R':
+                    // R键重置
+                    resetParameters();
+                    break;
+                case 'ArrowRight':
+                    // 右箭头单步
+                    stepAnimation();
+                    break;
+            }
+        });
+        
+        // 添加初始提示
+        setTimeout(() => {
+            status.textContent = '提示: 按空格键切换动画，R键重置，右箭头单步执行';
+        }, 3000);
+    </script>
+</body>
+</html>
