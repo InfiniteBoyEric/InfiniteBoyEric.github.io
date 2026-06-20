@@ -9,4 +9,4 @@ author: InfiniteBoy
 
 # 通信原理学习
 
-- AM调幅原理演示
+- [AM调幅原理演示](/assets/2026-06-20-AM_demonstration.html)
